@@ -21,8 +21,9 @@ def readEdfFile(fileName):
     for i in np.arange(n-3):
         data[:, i] = f.readSignal(i)
 
-    dataDF = pd.DataFrame(data.T, index=channelNames)
-    print(channelNames)
+    # dataDF = pd.DataFrame(data.T, index=channelNames)
+    dataDF=pd.DataFrame(data, columns=channelNames)
+    print(dataDF)
     # print(dataDF.shape)
 
 
