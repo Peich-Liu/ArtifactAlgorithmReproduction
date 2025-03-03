@@ -29,8 +29,6 @@ int main(){
     
     cout<<"buffer"<<buffer[0]<<endl;
 
-    // cout<<"signal"<<edf_struct.edfsignals<<endl;
-    // 关闭 EDF 文件
     edfclose_file(handle);
 
     return 0;

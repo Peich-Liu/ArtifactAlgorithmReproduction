@@ -2,34 +2,52 @@
 #include <cstdio>    // for popen, pclose
 #include <vector>
 #include <string>
+#include "edflib.h"
+
 
 int main() {
-    // 一些要传给Python脚本的测试数据
-    std::vector<double> mydata = {1.1, 2.2, 3.3, 4.4, 5.5};
 
-    // 要执行的Python脚本，比如 "python PCA.py"
-    // 也可以加上解释器路径，如 "/usr/bin/python3 PCA.py"
+    std::string NewFileName = "c://Document//PhD//EEG//Artifact//data//tuh_eeg_artifact//edf//01_tcp_ar//aaaaaaju_s005_t000.edf";
+    if (NewFileName.empty()) {
+        std::cerr << "No file specified\n";
+        return 1;
+    }
+
+    edf_hdr_struct edf_struct;
+    // open edf file
+    int handle = edfopen_file_readonly(NewFileName.c_str(), &edf_struct, EDFLIB_READ_ALL_ANNOTATIONS);
+
+
+    // Python script path
     std::string command = "python test.py";
 
-    // 使用 popen，以“写”模式打开管道
+    // _popen for pipeline
     FILE *pipe = _popen(command.c_str(), "w");
     if (!pipe) {
         std::cerr << "popen failed!\n";
         return 1;
     }
 
-    // 把数据以某种协议写入管道
-    // 这里演示最简单的：先写一个数据量，然后逐个写浮点数
-    // Python那边按相同的格式去读
-    int size = mydata.size();
-    // fprintf 可以写文本格式，也可以尝试写二进制
-    std::fprintf(pipe, "%d\n", size);  // 先告诉Python有几个数据
-    for (double val : mydata) {
+    int sig_idx = 1;
+    int total_samples = edf_struct.signalparam[sig_idx].smp_in_datarecord
+    * edf_struct.datarecords_in_file;
+
+
+    //load data size --> write each data to python
+    std::vector<double> buffer(total_samples);
+    int samples_read = edfread_physical_samples(handle, sig_idx, total_samples, buffer.data());
+
+    // int size = total_samples;
+    int size = buffer.size();
+    // std::vector<double> transfer = {buffer[0]};
+    std::fprintf(pipe, "%d\n", size);  // tell python data size
+
+
+    for (double val : buffer) {
         std::fprintf(pipe, "%.6f\n", val);
     }
 
-    // 结束写入
-    // 关闭管道，等待python脚本执行完
+    // close the pipe
     int status = _pclose(pipe);
 
     std::cout << "C++ done sending data, pclose status = " << status << std::endl;

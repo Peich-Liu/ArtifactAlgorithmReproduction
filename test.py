@@ -1,9 +1,7 @@
-# PCA.py
-
 import sys
 
 def main():
-    # 从 stdin 读：先读一个整数，表示数据个数
+    # load data from std, the first int is the data size
     line = sys.stdin.readline()
     if not line:
         print("No input from C++", file=sys.stderr)
@@ -11,7 +9,7 @@ def main():
 
     n = int(line.strip())
 
-    # 依次读取 n 个浮点数
+    # load data
     data = []
     for _ in range(n):
         line = sys.stdin.readline()
